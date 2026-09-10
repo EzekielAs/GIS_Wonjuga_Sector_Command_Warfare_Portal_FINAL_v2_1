@@ -145,7 +145,14 @@ if (fs.existsSync(publicDir)) {
     res.sendFile(path.join(publicDir, 'index.html'));
   });
 }
+// FIX - Wonjuga config endpoint to stop 404 logout
+app.get('/api/public/config', (req, res) => {
+  res.json({ success: true, sector: "WONJUGA" });
+});
 
+app.get('/api/public/config/:id', (req, res) => {
+  res.json({ success: true, sector: "WONJUGA" });
+});
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`GIS Wonjuga Portal running on ${PORT}`);
