@@ -147,4 +147,4 @@ if (fs.existsSync(publicDir)) {
 }
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`GIS Wonjuga Portal running on ${PORT}`));
+app.listen(PORT, () => console.log(`GIS Wonjuga Portal Live on port ${PORT}`));
