@@ -135,7 +135,11 @@ app.post('/api/offline/sync', auth, async (req, res) => {
 
 const publicDir = path.join(__dirname, '..', 'public');
 if (fs.existsSync(publicDir)) {
-  app.use(express.static(publicDir));
+  // FIX: Stop /index.html showing in URL
+  app.get('/index.html', (req, res) => {
+    res.redirect(301, '/');
+  });
+  app.use(express.static(publicDir, { index: false }));
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
     res.sendFile(path.join(publicDir, 'index.html'));
