@@ -15,7 +15,12 @@ const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-
+app.get('/api/public/config', (req, res) => {
+  res.json({ success: true, sector: "WONJUGA" });
+});
+app.get('/api/public/config/:id', (req, res) => {
+  res.json({ success: true, sector: "WONJUGA" });
+});
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
