@@ -504,9 +504,24 @@ app.get('/api/admin/reports/monthly', auth, allow('MAIN_ADMIN', 'FINANCE_OFFICER
 app.get('/api/admin/audit-logs', auth, allow('MAIN_ADMIN'), async (req, res) => { const r = await q(`SELECT a.*,u.username,u.display_name FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_user_id ORDER BY a.created_at DESC LIMIT 500`); res.json(r.rows); });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'index.html')));
-app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Unexpected server error' }); });
 
+// CLEAN URLS - hide .html extension
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+});
+
+// Redirect /admin.html -> /admin  and /index.html -> /
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const clean = req.path.replace(/\.html$/, '').replace(/^\/index$/, '/');
+    return res.redirect(301, clean || '/');
+  }
+  next();
+});
+
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'index.html')));
+
+app.use((err, req, res, next) => { console.error(err);
 const server = app.listen(PORT, () => console.log(`GIS Wonjuga Sector Command Warfare Portal listening on http://localhost:${PORT}`));
 async function shutdown(signal) { console.log(`${signal}: shutting down`); server.close(async () => { await pool.end(); process.exit(0); }); }
 process.on('SIGTERM', () => shutdown('SIGTERM'));
