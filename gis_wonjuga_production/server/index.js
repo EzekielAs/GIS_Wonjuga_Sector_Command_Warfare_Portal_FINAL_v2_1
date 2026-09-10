@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import { Pool, Client } from 'pg';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -16,18 +15,14 @@ const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(morgan('tiny'));
 
-// ONE POOL ONLY - ONLINE DB
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
   ssl: process.env.PGSSL === 'true'? { rejectUnauthorized: false } : undefined
 });
-
 const q = (text, params = []) => pool.query(text, params);
 
-// INIT DB - RUNS ONCE AT STARTUP (ONLINE)
 (async () => {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -75,14 +70,10 @@ const q = (text, params = []) => pool.query(text, params);
   }
 })();
 
-app.disable('x-powered-by');
-
 const JWT_SECRET = process.env.JWT_SECRET || 'gis-wonjuga-secret-key-2024';
-
 function signToken(user) {
   return jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '12h' });
 }
-
 function auth(req, res, next) {
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ')? h.slice(7) : null;
@@ -93,7 +84,6 @@ function auth(req, res, next) {
   } catch { return res.status(401).json({ error: 'Invalid token' }); }
 }
 
-// AUTH - ALWAYS ONLINE
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -143,8 +133,7 @@ app.post('/api/offline/sync', auth, async (req, res) => {
   res.json({ synced: count });
 });
 
-// STATIC
-const publicDir = path.join(__dirname, 'public');
+const publicDir = path.join(__dirname, '..', 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
   app.get('*', (req, res) => {
